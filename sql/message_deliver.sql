@@ -27,7 +27,7 @@ CREATE TABLE `message_deliver`  (
   `exchange` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '交换机名称',
   `routing_key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '路由Key',
   `content` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '消息内容',
-  `error_cause` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '错误原因',
+  `error_cause` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '错误原因',
   `max_retry` int(1) NULL DEFAULT NULL COMMENT '最多重试次数',
   `current_retry` int(1) NULL DEFAULT NULL COMMENT '当前重试次数',
   `del_flag` int(1) NULL DEFAULT NULL COMMENT '逻辑删除',
