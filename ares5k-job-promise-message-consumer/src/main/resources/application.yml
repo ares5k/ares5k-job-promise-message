@@ -30,10 +30,11 @@ spring:
     publisher-confirm-type: correlated
     publisher-returns: true
 
-  # 设置 atomikos log文件名
+  # 设置 atomikos log路径和文件名
   jta:
     atomikos:
       properties:
+        enable-logging: false
         log-base-name: consumer-atomikos
         log-base-dir: /ares5k-job-promise-message/ares5k-job-promise-message-consumer/atomikos-log
 

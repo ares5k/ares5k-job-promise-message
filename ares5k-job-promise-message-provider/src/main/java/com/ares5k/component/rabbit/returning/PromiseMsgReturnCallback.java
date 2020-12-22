@@ -1,6 +1,6 @@
 package com.ares5k.component.rabbit.returning;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.ares5k.entity.message.MessageDeliver;
 import com.ares5k.modules.message.mapper.MessageDeliverMapper;
 import com.ares5k.rabbit.constant.RabbitMsgHeaderConstant;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /**
  * RabbitMQ 可靠性消息投递 - 定时任务版
  * <p>
- * 类说明: 消息找不到队列回调处理类
+ * 类说明: 消息找不到队列时的回调处理类
  *
  * @author ares5k
  * @since 2020-12-18
@@ -43,12 +43,23 @@ public class PromiseMsgReturnCallback implements RabbitTemplate.ReturnCallback {
      */
     @Override
     public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
-        //更新消息状态
-        MessageDeliver messageDeliver = deliverMapper.selectById(message.getMessageProperties().getHeader(RabbitMsgHeaderConstant.RABBIT_MQ_RETURN_HEADER_CORRELATION_ID_KEY));
-        messageDeliver.setMsgStatus(MessageDeliver.MessageStatus.SERVER_FAIL.ordinal());
-        if (StrUtil.isNotEmpty(replyText)) {
+
+        //消息ID
+        String correlationId = message.getMessageProperties().getHeader(RabbitMsgHeaderConstant.RABBIT_MQ_RETURN_HEADER_CORRELATION_ID_KEY);
+        log.warn("发送到队列失败, 消息ID：{}", correlationId);
+
+        //根据消息ID查询
+        MessageDeliver messageDeliver = deliverMapper.selectById(correlationId);
+
+        //不为空并且状态是发送中的需要更新消息状态(其他消息状态走到这个逻辑说明是重发的场合, 重发场合不需要更新消息状态)
+        if (ObjectUtil.isNotEmpty(messageDeliver) && messageDeliver.getMsgStatus() == MessageDeliver.MessageStatus.SEND.ordinal()) {
+            //设置消息状态为寻找队列失败
+            messageDeliver.setMsgStatus(MessageDeliver.MessageStatus.QUEUE_NOT_FOUND.ordinal());
+            //设置错误原因
             messageDeliver.setErrorCause(replyText);
+            //更新消息表
+            log.info("更新消息状态");
+            deliverMapper.updateById(messageDeliver);
         }
-        deliverMapper.updateById(messageDeliver);
     }
 }

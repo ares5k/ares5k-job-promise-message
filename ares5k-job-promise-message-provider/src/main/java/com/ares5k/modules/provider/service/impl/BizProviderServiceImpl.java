@@ -14,6 +14,7 @@ import com.ares5k.rabbit.data.MsgData;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.aop.framework.AopContext;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
  * qq: 16891544
  * email: 16891544@qq.com
  */
+@Slf4j
 @Service
 public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizProvider> implements BizProviderService {
 
@@ -71,14 +73,13 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
                 MsgData.DataOperationEnum.INSERT_UPDATE,
                 super::save);
 
-        //插入失败
-        if (ObjectUtil.isEmpty(msgData)) {
-            return ERROR;
-        } else {
-            //插入成功后投递数据
+        //插入成功后投递数据
+        if (ObjectUtil.isNotEmpty(msgData)) {
             send(msgData);
             return SUCCESS;
         }
+        //插入失败
+        return ERROR;
     }
 
     /**
@@ -91,6 +92,7 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
      */
     @Override
     public String changeBizProvider(BizProvider provider) throws JsonProcessingException {
+
         //主键不能是空
         if (StrUtil.isEmpty(provider.getProviderId())) {
             return ERROR;
@@ -101,14 +103,13 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
                 MsgData.DataOperationEnum.INSERT_UPDATE,
                 super::updateById);
 
-        //修改失败
-        if (ObjectUtil.isEmpty(msgData)) {
-            return ERROR;
-        } else {
-            //更新成功后投递数据
+        //更新成功后投递数据
+        if (ObjectUtil.isNotEmpty(msgData)) {
             send(msgData);
             return SUCCESS;
         }
+        //更新失败
+        return ERROR;
     }
 
     /**
@@ -132,14 +133,13 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
                 MsgData.DataOperationEnum.DELETE,
                 (providerParam) -> super.removeById(providerParam.getProviderId()));
 
-        //删除失败
-        if (ObjectUtil.isEmpty(msgData)) {
-            return ERROR;
-        } else {
-            //删除成功后投递数据
+        //删除成功后投递数据
+        if (ObjectUtil.isNotEmpty(msgData)) {
             send(msgData);
             return SUCCESS;
         }
+        //删除失败
+        return ERROR;
     }
 
     /**
@@ -156,6 +156,8 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
     public MsgData distributeTransaction(BizProvider provider, MsgData.DataOperationEnum dataOperationEnum, DistributeTransactionAction action) throws JsonProcessingException {
 
         //创建 Rabbit消息对象
+        log.info("跨库事务: 开始");
+        log.info("跨库事务：业务库事务");
         MsgData msgData = new MsgData();
         msgData.setBizProvider(provider);
         msgData.setOperation(dataOperationEnum);
@@ -180,9 +182,12 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
             messageDeliver.setMaxRetry(5);
             //当前重试次数
             messageDeliver.setCurrentRetry(0);
+
             //message数据库执行新增操作
+            log.info("跨库事务：消息库事务");
             if (deliverMapper.insert(messageDeliver) > 0) {
                 //返回消息对象
+                log.info("跨库事务: 结束");
                 return msgData;
             }
         }
@@ -199,6 +204,7 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
 
         // mq消息投递
         // mq 使用了 publisher confirm工作模式, 投递后会回调成功或失败的监听方法
+        log.info("发送消息: 开始");
         promiseMsgWithCallbackRabbitTemplate.convertAndSend(
                 //交换机名
                 ExchangeConstant.PROMISE_MESSAGE_EXCHANGE_NAME,
@@ -208,6 +214,7 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
                 msgData
                 //消息关联数据
                 , new CorrelationData(msgData.getMsgId()));
+        log.info("发送消息: 结束");
     }
 
     /**

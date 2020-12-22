@@ -35,6 +35,9 @@ public class MsgData {
      * 对数据操作的类型
      */
     public enum DataOperationEnum {
-        INSERT_UPDATE, DELETE
+        //增改
+        INSERT_UPDATE,
+        //删除
+        DELETE
     }
 }

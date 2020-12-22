@@ -8,6 +8,7 @@ import com.ares5k.rabbit.constant.RabbitMsgHeaderConstant;
 import com.ares5k.rabbit.data.MsgData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -28,6 +29,7 @@ import java.io.IOException;
  * qq: 16891544
  * email: 16891544@qq.com
  */
+@Slf4j
 @Component
 public class PromiseMessageConsumer {
 
@@ -71,29 +73,23 @@ public class PromiseMessageConsumer {
 
         //获取消息在队列的位置
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        log.info("收到rabbit broker投递的消息, 消息ID：{} 在队列中的位置：{}", correlationId, deliveryTag);
 
-        try {
-            //幂等性验证, 相同的消息ID只能执行一次
-            if (!BooleanUtil.isTrue(redisTemplate.opsForValue().setIfAbsent("rabbit:unique:" + correlationId, "已处理"))) {
-                return;
-            }
-            try {
-                //业务处理结果判断
-                if (!bizProcess(correlationId, message)) {
-                    //业务处理失败, 删除幂等性标识
-                    redisTemplate.delete("rabbit:unique:" + correlationId);
-                }
-            } catch (Exception e) {
-                //业务处理失败, 删除幂等性标识
-                redisTemplate.delete("rabbit:unique:" + correlationId);
-            }
-        } finally {
-            //此处使用手动 ack的目的仅仅是为了限流
-            //哪怕消费失败了也不需要将消息重回队列, 既然消息
-            //不重回队列, 那么此处用 ack nack reject都无所谓的,
-            //只是为了告诉 broker可以继续发消息了
-            channel.basicAck(deliveryTag, false);
+        //幂等性验证, 相同的消息ID只能执行一次
+        if (!BooleanUtil.isTrue(redisTemplate.opsForValue().setIfAbsent("rabbit:unique:" + correlationId, "已处理"))) {
+            log.warn("消息已经被处理过, 不能重复处理, 消息ID：{}", correlationId);
+            return;
         }
+        //业务处理结果判断
+        if (!bizProcess(correlationId, message)) {
+            //业务处理失败, 删除幂等性标识
+            redisTemplate.delete("rabbit:unique:" + correlationId);
+        }
+        //此处使用手动 ack的目的仅仅是为了限流
+        //哪怕消费失败了也不需要将消息重回队列, 既然消息
+        //不重回队列, 那么此处用 ack nack reject都无所谓的,
+        //只是为了告诉 broker可以继续发消息了
+        channel.basicAck(deliveryTag, false);
     }
 
     /**
@@ -116,6 +112,7 @@ public class PromiseMessageConsumer {
             BizConsumer bizConsumer = new BizConsumer();
             BeanUtils.copyProperties(msgData.getBizProvider(), bizConsumer);
 
+            log.info("消费消息: 开始");
             //判断数据的操作类型
             switch (msgData.getOperation()) {
                 case INSERT_UPDATE:
@@ -129,9 +126,10 @@ public class PromiseMessageConsumer {
             }
             //处理成功
             result = true;
+            log.info("消费消息: 结束");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("消费失败, 删除幂等性标识", e);
         }
         //处理结果
         return result;

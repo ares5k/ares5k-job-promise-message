@@ -52,6 +52,7 @@ public class CompensateSchedule {
     public void compensate() {
 
         //查询 30秒仍未成功处理的消息
+        log.info("定时任务：检查30秒仍未成功处理的消息 开始");
         List<MessageDeliver> messageDeliverList = deliverMapper.failedMessage();
 
         //遍历
@@ -61,11 +62,13 @@ public class CompensateSchedule {
             deliverMapper.updateById(messageDeliver);
 
             //重发消息
+            log.info("定时任务：重新发送消息, 消息ID：{}", messageDeliver.getMsgId());
             promiseMsgWithCallbackRabbitTemplate.send(
                     messageDeliver.getExchange(),
                     messageDeliver.getRoutingKey(),
                     new Message(messageDeliver.getContent().getBytes(), new MessageProperties()),
                     new CorrelationData(messageDeliver.getMsgId()));
         });
+        log.info("定时任务：检查30秒仍未成功处理的消息 结束");
     }
 }

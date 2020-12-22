@@ -39,7 +39,6 @@ public class AutoInsertHandler implements MetaObjectHandler {
         this.setInsertFieldValByName("modifyTime", new Date(), metaObject);
         //乐观锁初始化
         this.setInsertFieldValByName("version", 0, metaObject);
-
     }
 
     /**

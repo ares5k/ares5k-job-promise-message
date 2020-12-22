@@ -8,18 +8,18 @@
     <!-- 查询 30秒仍未成功处理的消息 -->
     <select id="failedMessage" resultType="com.ares5k.entity.message.MessageDeliver">
         SELECT
-        msg_id,
-        msg_status,
-        exchange,
-        routing_key,
-        content,
-        current_retry
+            msg_id,
+            msg_status,
+            exchange,
+            routing_key,
+            content,
+            current_retry
         FROM
-        `message_deliver`
+            `message_deliver`
         WHERE
-        del_flag = 0
-        AND current_retry &lt; max_retry
-        AND TIMESTAMPDIFF( SECOND, create_time, SYSDATE()) > 30
-        AND MSG_STATUS != 3
+            del_flag = 0
+            AND current_retry &lt; max_retry
+            AND TIMESTAMPDIFF( SECOND, create_time, SYSDATE()) > 30
+            AND MSG_STATUS != 3
     </select>
 </mapper>

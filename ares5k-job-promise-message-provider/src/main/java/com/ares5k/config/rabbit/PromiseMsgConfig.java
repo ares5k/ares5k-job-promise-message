@@ -31,13 +31,13 @@ import org.springframework.context.annotation.DependsOn;
 public class PromiseMsgConfig {
 
     /**
-     * 消息找不到队列回调处理对象
+     * 消息找不到队列时的回调处理对象
      */
     @Autowired
     private PromiseMsgReturnCallback returnCallback;
 
     /**
-     * 消息发送到交换机的结果的回调处理对象
+     * 消息发送到交换机的签收结果回调处理对象
      */
     @Autowired
     private PromiseMsgConfirmCallback confirmCallback;

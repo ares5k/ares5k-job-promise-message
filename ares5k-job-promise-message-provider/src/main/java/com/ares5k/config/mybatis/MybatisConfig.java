@@ -93,6 +93,7 @@ public class MybatisConfig {
 
         //获取设置的 mybatis-plus全局配置
         GlobalConfig globalConfig = this.properties.getGlobalConfig();
+
         //在 spring容器中查找自动填充器
         if (this.applicationContext.getBeanNamesForType(MetaObjectHandler.class, false, false).length > 0) {
             MetaObjectHandler metaObjectHandler = this.applicationContext.getBean(MetaObjectHandler.class);
@@ -100,6 +101,7 @@ public class MybatisConfig {
         }
         //为当前 sqlSessionFactory设置全局配置
         mybatisSqlSessionFactoryBean.setGlobalConfig(globalConfig);
+
         //mybatis plus的 SqlSessionFactory对象
         return mybatisSqlSessionFactoryBean.getObject();
     }
