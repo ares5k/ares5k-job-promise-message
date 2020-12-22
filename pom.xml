@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- RabbitMQ 可靠性消息投递 - 定时任务
+     模块: 根工程
+     Author: ares5k
+     扣扣: 16891544
+     邮箱: 16891544@qq.com -->
+
+    <!-- 本工程 -->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.ares5k</groupId>
+    <artifactId>ares5k-job-promise-message</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- 子模块 -->
+    <modules>
+        <!-- RabbitMQ 可靠性消息投递 - 定时任务版 - 提供端 -->
+        <module>ares5k-job-promise-message-provider</module>
+        <!-- RabbitMQ 可靠性消息投递 - 定时任务版 - 消费端 -->
+        <module>ares5k-job-promise-message-consumer</module>
+        <!-- RabbitMQ 可靠性消息投递 - 定时任务版 - 共通 -->
+        <module>ares5k-job-promise-message-common</module>
+    </modules>
+
+    <!-- 自定义属性 -->
+    <properties>
+        <hu-tool.version>5.0.7</hu-tool.version>
+    </properties>
+
+    <!-- 依赖版本统一管理 -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- spring boot 指定的依赖版本 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.2.1.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

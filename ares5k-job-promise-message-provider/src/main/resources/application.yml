@@ -1,0 +1,48 @@
+spring:
+  # 默认数据源
+  datasource:
+    url: jdbc:mysql://192.168.3.20:3306/promise-provider?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+
+  # 自定义数据源属性 提供端数据库
+  provider-db:
+    datasource:
+      url: jdbc:mysql://192.168.3.20:3306/promise-provider?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+      username: root
+      password: root
+
+  # 自定义数据源属性 消息数据库
+  message-db:
+    datasource:
+      url: jdbc:mysql://192.168.3.20:3306/promise-message?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+      username: root
+      password: root
+
+  # rabbit-mq
+  rabbitmq:
+    host: 192.168.3.88
+    port: 5672
+    username: ares5k
+    password: ares5k
+    virtual-host: promise-message-virtual
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+  # 设置 atomikos log文件名
+  jta:
+    atomikos:
+      properties:
+        log-base-name: consumer-atomikos
+        log-base-dir: /ares5k-job-promise-message/ares5k-job-promise-message-provider/atomikos-log
+
+# mybatis-plus
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: id_worker_str
+  configuration:
+    map-underscore-to-camel-case: true

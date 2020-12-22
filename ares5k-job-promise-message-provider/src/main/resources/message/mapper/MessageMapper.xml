@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- message-数据库
+    @author ares5k
+    @since 2020-12-18 -->
+<mapper namespace="com.ares5k.modules.message.mapper.MessageDeliverMapper">
+    <!-- 查询 30秒仍未成功处理的消息 -->
+    <select id="failedMessage" resultType="com.ares5k.entity.message.MessageDeliver">
+        SELECT
+        msg_id,
+        msg_status,
+        exchange,
+        routing_key,
+        content,
+        current_retry
+        FROM
+        `message_deliver`
+        WHERE
+        del_flag = 0
+        AND current_retry &lt; max_retry
+        AND TIMESTAMPDIFF( SECOND, create_time, SYSDATE()) > 30
+        AND MSG_STATUS != 3
+    </select>
+</mapper>
