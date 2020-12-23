@@ -87,7 +87,7 @@ public class BizConsumerServiceImpl extends ServiceImpl<BizConsumerMapper, BizCo
      * @param action   事务操作(函数式接口的Lambda实现)
      * @author ares5k
      */
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     public void distributeTransaction(String msgId, BizConsumer consumer, DistributeTransactionAction action) {
 
         log.info("跨库事务: 开始");
@@ -113,7 +113,7 @@ public class BizConsumerServiceImpl extends ServiceImpl<BizConsumerMapper, BizCo
      * @param messageDeliver 消息投递表对象
      * @author ares5k
      */
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     public void processFail(MessageDeliver messageDeliver) {
         //消费异常时，更新消息状态为 4-消费端签收失败
         log.error("消息消费异常: 更新消息状态为消费端签收失败。");

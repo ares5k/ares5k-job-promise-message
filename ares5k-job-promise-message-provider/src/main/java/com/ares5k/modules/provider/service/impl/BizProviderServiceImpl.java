@@ -152,7 +152,7 @@ public class BizProviderServiceImpl extends ServiceImpl<BizProviderMapper, BizPr
      * @throws JsonProcessingException jackson json异常
      * @author ares5k
      */
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     public MsgData distributeTransaction(BizProvider provider, MsgData.DataOperationEnum dataOperationEnum, DistributeTransactionAction action) throws JsonProcessingException {
 
         //创建 Rabbit消息对象
